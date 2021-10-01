@@ -1,13 +1,13 @@
 package com.example.firebasedemo;
 
-public class User
-{
+public class User {
     private String name;
-    private String age;
-    public User(){}
-    public User(String name, String age){
+
+    public User() {
+    }
+
+    public User(String name) {
         this.name = name;
-        this.age = age;
     }
 
     public String getName() {
@@ -18,11 +18,4 @@ public class User
         this.name = name;
     }
 
-    public String getAge() {
-        return age;
-    }
-
-    public void setAge(String age) {
-        this.age = age;
-    }
 }
