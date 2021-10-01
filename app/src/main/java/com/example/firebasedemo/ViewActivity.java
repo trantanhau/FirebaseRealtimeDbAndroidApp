@@ -20,6 +20,8 @@ public class ViewActivity extends AppCompatActivity {
     RecyclerView recyclerView;
     RecycleViewAdapter adapter;
     DAOUser dao;
+    boolean isLoading = false;
+    String key = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,24 +35,43 @@ public class ViewActivity extends AppCompatActivity {
         recyclerView.setAdapter(adapter);
         dao = new DAOUser();
         loadData();
+        recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
+                LinearLayoutManager linearLayoutManager = (LinearLayoutManager) recyclerView.getLayoutManager();
+                int totalItem = linearLayoutManager.getItemCount();
+                int lastVisible = linearLayoutManager.findLastCompletelyVisibleItemPosition();
+                if (totalItem < lastVisible+3){
+                    if (!isLoading){
+                        isLoading = true;
+                        loadData();
+                    }
+                }
+            }
+        });
     }
 
     private void loadData() {
-        dao.get().addValueEventListener(new ValueEventListener() {
+        swipeRefreshLayout.setRefreshing(true);
+        dao.get(key).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 ArrayList<User> users = new ArrayList<>();
                 for (DataSnapshot data : snapshot.getChildren()) {
                     User user = data.getValue(User.class);
+                    user.setKey(data.getKey());
                     users.add(user);
+                    key = data.getKey();
                 }
                 adapter.setItems(users);
                 adapter.notifyDataSetChanged();
+                isLoading = false;
+                swipeRefreshLayout.setRefreshing(false);
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
-
+                swipeRefreshLayout.setRefreshing(false);
             }
         });
     }

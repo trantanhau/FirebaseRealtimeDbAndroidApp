@@ -2,10 +2,12 @@ package com.example.firebasedemo;
 
 import android.content.Context;
 import android.content.Intent;
+import android.os.Parcelable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.PopupMenu;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -37,6 +39,29 @@ public class RecycleViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
         UserViewHolder vh = (UserViewHolder) holder;
         User user = list.get(position);
         vh.txt_name.setText(user.getName());
+        vh.txt_option.setOnClickListener(event -> {
+            PopupMenu popupMenu = new PopupMenu(context, vh.txt_option);
+            popupMenu.inflate(R.menu.option_menu);
+            popupMenu.setOnMenuItemClickListener(item -> {
+                switch (item.getItemId()) {
+                    case R.id.menu_edit:
+                        Intent intent = new Intent(context, MainActivity.class);
+                        intent.putExtra("EDIT", String.valueOf(user));
+                        context.startActivity(intent);
+                        break;
+                    case R.id.menu_remove:
+                        DAOUser dao = new DAOUser();
+                        dao.remove(user.getKey()).addOnSuccessListener(success -> {
+                            Toast.makeText(context, "User has been removed", Toast.LENGTH_SHORT).show();
+                            notifyItemRemoved(position);
+                        }).addOnFailureListener(error -> {
+                            Toast.makeText(context, "" + error.getMessage(), Toast.LENGTH_SHORT).show();
+                        });
+                }
+                return false;
+            });
+            popupMenu.show();
+        });
     }
 
     @Override
